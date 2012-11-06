@@ -16,17 +16,24 @@
  */
 package org.geotools.data.wfs.protocol.wfs;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.spi.ServiceRegistry;
 
 import org.eclipse.emf.ecore.EObject;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
+import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_Protocol;
+import org.geotools.data.wfs.v1_1_0.parsers.ExceptionReportParser;
 import org.geotools.factory.FactoryNotFoundException;
+import org.geotools.wfs.v1_1.WFSConfiguration;
 
 /**
  * Utility class to look up for a parser that can deal with a given WFS response and process it.
@@ -54,7 +61,8 @@ public class WFSExtensions {
      * The service registry for this manager. Will be initialized only when first needed.
      */
     private static Set<WFSResponseParserFactory> registry;
-
+    private static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geotools.data.wfs");
+    
     /**
      * Processes the result of a WFS operation and returns the parsed object.
      * <p>
@@ -72,13 +80,17 @@ public class WFSExtensions {
      * @throws IOException
      */
     public static Object process(WFS_1_1_0_DataStore wfs, WFSResponse response) throws IOException {
-
         EObject originatingRequest = response.getOriginatingRequest();
         WFSResponseParserFactory pf = findParserFactory(originatingRequest);
-
-        WFSResponseParser parser = pf.createParser(wfs, response);
-
+        WFSResponseParser parser = pf.createParser(wfs, response);        
         Object result = parser.parse(wfs, response);
+        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            WFS_1_1_0_Protocol.encode(originatingRequest, new WFSConfiguration(), out, Charset.forName("UTF-8"));
+            LOGGER.finest(out.toString("UTF-8"));
+        }
+        
         return result;
     }
 
