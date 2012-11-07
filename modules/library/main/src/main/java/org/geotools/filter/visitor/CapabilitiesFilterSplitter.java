@@ -154,13 +154,13 @@ public class CapabilitiesFilterSplitter implements FilterVisitor, ExpressionVisi
      * The stack holding the bits of the filter that are not processable by something with the given
      * {@link FilterCapabilities}
      */
-    private Stack postStack = new Stack();
+    protected Stack postStack = new Stack();
 
     /**
      * The stack holding the bits of the filter that <b>are</b> processable by something with the
      * given {@link FilterCapabilities}
      */
-    private Stack preStack = new Stack();
+    protected Stack preStack = new Stack();
 
     /**
      * Operates similar to postStack. When a update is determined to affect an attribute expression
@@ -172,11 +172,11 @@ public class CapabilitiesFilterSplitter implements FilterVisitor, ExpressionVisi
     /**
      * The given filterCapabilities that we're splitting on.
      */
-    private Capabilities fcs = null;
+    protected Capabilities fcs = null;
 
     private FeatureType parent = null;
 
-    private Filter original = null;
+    protected Filter original = null;
 
     /**
      * If we're in the middle of a client-side transaction, this object will help us figure out what

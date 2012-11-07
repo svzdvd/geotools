@@ -16,9 +16,9 @@
  */
 package org.geotools.data.wfs;
 
-import static org.geotools.data.wfs.protocol.http.HttpUtil.*;
 import static org.geotools.data.wfs.protocol.http.HttpMethod.GET;
 import static org.geotools.data.wfs.protocol.http.HttpMethod.POST;
+import static org.geotools.data.wfs.protocol.http.HttpUtil.createUrl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -60,6 +60,7 @@ import org.geotools.data.wfs.v1_1_0.CubeWerxStrategy;
 import org.geotools.data.wfs.v1_1_0.DefaultWFSStrategy;
 import org.geotools.data.wfs.v1_1_0.GeoServerStrategy;
 import org.geotools.data.wfs.v1_1_0.IonicStrategy;
+import org.geotools.data.wfs.v1_1_0.TinyOWSStrategy;
 import org.geotools.data.wfs.v1_1_0.WFSStrategy;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_Protocol;
@@ -516,6 +517,9 @@ public class WFSDataStoreFactory extends AbstractDataStoreFactory {
             }
             else if( override.equalsIgnoreCase("ionic")){
                 strategy = new IonicStrategy();
+            }
+            else if ( override.equalsIgnoreCase("tinyows")){
+                strategy = new TinyOWSStrategy();
             }
             else {
                 logger.warning("Could not handle wfs strategy override "+override+" proceeding with autodetection");
