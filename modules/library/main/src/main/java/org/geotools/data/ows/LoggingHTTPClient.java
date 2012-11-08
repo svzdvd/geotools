@@ -43,11 +43,13 @@ public class LoggingHTTPClient extends DelegateHTTPClient {
     }
 
     
+    @Override
     public HTTPResponse post(URL url, InputStream postContent, String postContentType) throws IOException {
         if (LOGGER.isLoggable(Level.FINEST)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             copy(postContent, out);
-            LOGGER.finest("POST Request: \n" + out.toString(charsetName));
+            LOGGER.finest("POST Request URL: " + url);
+            LOGGER.finest("POST Request Body: \n" + out.toString(charsetName));
             
             return new LoggingHTTPResponse(delegate.post(url, new ByteArrayInputStream(out.toByteArray()), 
                     postContentType), charsetName);            
@@ -55,9 +57,11 @@ public class LoggingHTTPClient extends DelegateHTTPClient {
             return delegate.post(url, postContent, postContentType);
         }
     }
-
+    
+    @Override
     public HTTPResponse get(URL url) throws IOException {
         if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("GET Request URL: " + url);            
             return new LoggingHTTPResponse(delegate.get(url), charsetName);                        
         } else {        
             return delegate.get(url);
@@ -78,7 +82,7 @@ public class LoggingHTTPClient extends DelegateHTTPClient {
         
         public LoggingHTTPResponse(HTTPResponse delegate, String charsetName) throws IOException {
             super(delegate);
-            
+                        
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             LoggingHTTPClient.copy(delegate.getResponseStream(), output);
             LOGGER.finest("Response: \n" + output.toString(charsetName));

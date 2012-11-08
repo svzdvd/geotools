@@ -31,52 +31,63 @@ public class DelegateHTTPClient implements HTTPClient {
     }
 
     
+    @Override
     public HTTPResponse post(URL url, InputStream postContent, String postContentType) throws IOException {
         return delegate.post(url, postContent, postContentType);
     }
 
+    @Override    
     public HTTPResponse get(URL url) throws IOException {
         return delegate.get(url);
     }
-
+    
+    @Override
     public String getUser() {
         return delegate.getUser();
     }
-
+    
+    @Override
     public void setUser(String user) {
         delegate.setUser(user);
     }
 
+    @Override
     public String getPassword() {
         return delegate.getPassword();
     }
 
+    @Override
     public void setPassword(String password) {
         delegate.setPassword(password);
     }
 
+    @Override
     public int getConnectTimeout() {
         return delegate.getConnectTimeout();
     }
 
+    @Override
     public void setConnectTimeout(int connectTimeout) {
         delegate.setConnectTimeout(connectTimeout);
     }
 
+    @Override
     public int getReadTimeout() {
         return delegate.getReadTimeout();
     }
 
+    @Override
     public void setReadTimeout(int readTimeout) {
         delegate.setReadTimeout(readTimeout);
     }
 
+    @Override
     public void setTryGzip(boolean tryGZIP) {
         delegate.setTryGzip(tryGZIP);
     }
     
+    @Override
     public boolean isTryGzip() {
         return delegate.isTryGzip();
     }
-    
 }
