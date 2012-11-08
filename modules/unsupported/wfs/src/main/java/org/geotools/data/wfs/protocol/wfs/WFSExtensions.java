@@ -16,6 +16,7 @@
  */
 package org.geotools.data.wfs.protocol.wfs;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -27,11 +28,11 @@ import java.util.logging.Logger;
 
 import javax.imageio.spi.ServiceRegistry;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.emf.ecore.EObject;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_DataStore;
 import org.geotools.data.wfs.v1_1_0.WFS_1_1_0_Protocol;
-import org.geotools.data.wfs.v1_1_0.parsers.ExceptionReportParser;
 import org.geotools.factory.FactoryNotFoundException;
 import org.geotools.wfs.v1_1.WFSConfiguration;
 
@@ -81,16 +82,23 @@ public class WFSExtensions {
      */
     public static Object process(WFS_1_1_0_DataStore wfs, WFSResponse response) throws IOException {
         EObject originatingRequest = response.getOriginatingRequest();
-        WFSResponseParserFactory pf = findParserFactory(originatingRequest);
-        WFSResponseParser parser = pf.createParser(wfs, response);        
-        Object result = parser.parse(wfs, response);
-        
+
         if (LOGGER.isLoggable(Level.FINEST)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             WFS_1_1_0_Protocol.encode(originatingRequest, new WFSConfiguration(), out, Charset.forName("UTF-8"));
-            LOGGER.finest(out.toString("UTF-8"));
+            LOGGER.finest("REQUEST: " + out.toString("UTF-8"));
+            
+            out.reset();
+            IOUtils.copy(response.getInputStream(), out);
+            LOGGER.finest("RESPONSE: " + out.toString("UTF-8"));
+            
+            response.setInputStream(new ByteArrayInputStream(out.toByteArray()));
         }
         
+        WFSResponseParserFactory pf = findParserFactory(originatingRequest);
+        WFSResponseParser parser = pf.createParser(wfs, response);        
+        Object result = parser.parse(wfs, response);
+                
         return result;
     }
 
