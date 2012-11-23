@@ -123,7 +123,7 @@ public abstract class JDBCTestSetup {
      *
      * @param input The sql.
      */
-    protected void run(String input) throws Exception {
+    public void run(String input) throws Exception {
         run(new ByteArrayInputStream(input.getBytes()));
     }
     
