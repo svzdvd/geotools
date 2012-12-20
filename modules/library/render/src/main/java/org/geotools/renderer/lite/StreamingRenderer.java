@@ -81,6 +81,7 @@ import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.Decimator;
 import org.geotools.geometry.jts.GeometryClipper;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.LiteCoordinateSequence;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
 import org.geotools.geometry.jts.LiteShape2;
@@ -3216,9 +3217,18 @@ public class StreamingRenderer implements GTRenderer {
                         // fact we're modifing the geometry coordinates directly, if we don't get
                         // the reprojected and decimated geometry we risk of transforming it twice
                         // when computing the centroid
-                        Shape first = getTransformedShape(g, sa);
+                        LiteShape2 first = getTransformedShape(g, sa);
                         if(first != null) {
+                            if(projectionHandler != null) {
+                                // at the same time, we cannot keep the geometry in screen space because
+                                // that would prevent the advanced projection handling to do its work,
+                                // to replicate the geometries across the datelines, so we transform
+                                // it back to the original
+                                Geometry tx = JTS.transform(first.getGeometry(), sa.xform.inverse());
+                                return getTransformedShape(RendererUtilities.getCentroid(tx), sa);
+                            } else {
                                 return getTransformedShape(RendererUtilities.getCentroid(g), null);
+                            }
                         } else {
                                 return null;
                         }
@@ -3273,8 +3283,23 @@ public class StreamingRenderer implements GTRenderer {
                     Decimator d = getDecimator(sa.xform);
                     d.decimateTransformGeneralize(geom, sa.crsxform);
                     geom.geometryChanged();
-                    // then post process it (provide reverse transform if available)                   
-                    MathTransform reverse = sa.crsxform == null ? null : sa.crsxform.inverse();
+                    // then post process it (provide reverse transform if available)
+                    MathTransform reverse = null;
+                    if (sa.crsxform != null) {
+                        if (sa.crsxform instanceof ConcatenatedTransform
+                                && ((ConcatenatedTransform) sa.crsxform).transform1
+                                        .getTargetDimensions() >= 3
+                                && ((ConcatenatedTransform) sa.crsxform).transform2
+                                        .getTargetDimensions() == 2) {
+                            reverse = null; // We are downcasting 3D data to 2D data so no inverse is available
+                        } else {
+                            try {
+                                reverse = sa.crsxform.inverse();
+                            } catch (Exception cannotReverse) {
+                                reverse = null; // reverse transform not available
+                            }
+                        }
+                    }
                     geom = projectionHandler.postProcess(reverse, geom);
                     if(geom == null) {
                         shape = null;
